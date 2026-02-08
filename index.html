@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Cinema Chill</title>
+<title>Streamub</title>
 <style>
   body {
     margin: 0;
@@ -103,7 +103,7 @@
 </head>
 <body>
 
-<header>Mini Cinema Chill</header>
+<header>Streamub</header>
 
 <input type="text" id="search" placeholder="Rechercher un film ou série...">
 <select id="seasonSelect"></select>
@@ -141,7 +141,7 @@ const seasonSelect = document.getElementById('seasonSelect');
 
 let currentSerie = null;
 
-// Fonction pour afficher les cartes
+// Affiche les films et séries
 function render(items) {
   grid.innerHTML = "";
   seasonSelect.style.display = 'none';
@@ -165,7 +165,7 @@ function render(items) {
   });
 }
 
-// Fonction pour afficher les épisodes d'une série
+// Affiche les épisodes d'une série
 function renderEpisodes(serie, seasonIndex){
   grid.innerHTML = "";
   seasonSelect.style.display = 'block';
