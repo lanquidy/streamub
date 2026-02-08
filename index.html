@@ -29,6 +29,18 @@
     border: none;
   }
 
+  #seasonSelect {
+    display: none;
+    margin: 1rem auto;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: none;
+    width: 80%;
+    max-width: 200px;
+    background: #222;
+    color: #fff;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -42,7 +54,7 @@
     border-radius: 10px;
     overflow: hidden;
     text-align: center;
-    background: rgba(255,255,255,0.05); /* léger overlay pour distinguer */
+    background: rgba(255,255,255,0.05);
     padding-bottom: 0.5rem;
     transition: transform 0.2s;
   }
@@ -93,8 +105,8 @@
 
 <header>Mini Cinema Chill</header>
 
-<input type="text" id="search" placeholder="Rechercher un film...">
-
+<input type="text" id="search" placeholder="Rechercher un film ou série...">
+<select id="seasonSelect"></select>
 <div class="grid" id="grid"></div>
 
 <div class="modal" id="modal">
@@ -103,48 +115,80 @@
 </div>
 
 <script>
-const films = [
-  {
-    title: "Inception",
-    poster: "inception.jpg",
-    video: "inception.mp4",
-    description: "Un film de science-fiction sur les rêves."
-  },
-  {
-    title: "Interstellar",
-    poster: "interstellar.jpg",
-    video: "interstellar.mp4",
-    description: "Exploration spatiale et voyage dans le temps."
-  },
-  {
-    title: "The Matrix",
-    poster: "matrix.jpg",
-    video: "matrix.mp4",
-    description: "Le monde réel est une illusion."
-  }
+const content = [
+  // Films
+  {type:"film", title:"Inception", poster:"https://i.imgur.com/8RKXAIV.jpg", video:"https://www.w3schools.com/html/mov_bbb.mp4", description:"Film de science-fiction sur les rêves."},
+  {type:"film", title:"Interstellar", poster:"https://i.imgur.com/qzZ5jXz.jpg", video:"https://www.w3schools.com/html/movie.mp4", description:"Exploration spatiale et voyage dans le temps."},
+
+  // Séries
+  {type:"serie", title:"Stranger Things", poster:"https://i.imgur.com/JS4QWkf.jpg", seasons:[
+    {season:1, episodes:[
+      {title:"S01E01", video:"https://www.w3schools.com/html/mov_bbb.mp4"},
+      {title:"S01E02", video:"https://www.w3schools.com/html/movie.mp4"}
+    ]},
+    {season:2, episodes:[
+      {title:"S02E01", video:"https://www.w3schools.com/html/mov_bbb.mp4"}
+    ]}
+  ], description:"Une série mystérieuse avec des phénomènes surnaturels."}
 ];
 
-// Récupération des éléments
 const grid = document.getElementById('grid');
 const search = document.getElementById('search');
 const modal = document.getElementById('modal');
 const modalVideo = document.getElementById('modalVideo');
 const close = document.getElementById('close');
+const seasonSelect = document.getElementById('seasonSelect');
 
-// Fonction pour afficher les films
+let currentSerie = null;
+
+// Fonction pour afficher les cartes
 function render(items) {
   grid.innerHTML = "";
-  items.forEach(film => {
+  seasonSelect.style.display = 'none';
+  items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `
-      <img src="${film.poster}" alt="${film.title}">
-      <div class="card-title">${film.title}</div>
-    `;
-    // Quand on clique sur le film, on lance la vidéo
+    card.innerHTML = `<img src="${item.poster}" alt="${item.title}"><div class="card-title">${item.title}</div>`;
+    
+    card.onclick = () => {
+      if(item.type === "film") {
+        modal.style.display = 'flex';
+        modalVideo.src = item.video;
+        modalVideo.play();
+      } else if(item.type === "serie") {
+        currentSerie = item;
+        renderEpisodes(item,0);
+      }
+    };
+    
+    grid.appendChild(card);
+  });
+}
+
+// Fonction pour afficher les épisodes d'une série
+function renderEpisodes(serie, seasonIndex){
+  grid.innerHTML = "";
+  seasonSelect.style.display = 'block';
+  seasonSelect.innerHTML = "";
+
+  serie.seasons.forEach((s,i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = "Saison " + s.season;
+    seasonSelect.appendChild(opt);
+  });
+
+  seasonSelect.onchange = e => {
+    renderEpisodes(serie, parseInt(e.target.value));
+  };
+
+  serie.seasons[seasonIndex].episodes.forEach(ep => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<img src="${serie.poster}" alt="${ep.title}"><div class="card-title">${ep.title}</div>`;
     card.onclick = () => {
       modal.style.display = 'flex';
-      modalVideo.src = film.video;
+      modalVideo.src = ep.video;
       modalVideo.play();
     };
     grid.appendChild(card);
@@ -154,7 +198,7 @@ function render(items) {
 // Recherche en direct
 search.addEventListener('input', e => {
   const query = e.target.value.toLowerCase();
-  const filtered = films.filter(film => film.title.toLowerCase().includes(query));
+  const filtered = content.filter(item => item.title.toLowerCase().includes(query));
   render(filtered);
 });
 
@@ -162,11 +206,11 @@ search.addEventListener('input', e => {
 close.onclick = () => {
   modal.style.display = 'none';
   modalVideo.pause();
-  modalVideo.src = ""; // pour réinitialiser la vidéo
+  modalVideo.src = "";
 };
 
 // Affichage initial
-render(films);
+render(content);
 </script>
 
 </body>
